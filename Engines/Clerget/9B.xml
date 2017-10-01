@@ -1,0 +1,105 @@
+<?xml version="1.0"?>
+<!--
+  Author:   Bomber
+  Version: 	1.0
+
+General characteristics
+
+    Type: Nine-cylinder air-cooled rotary engine
+    Bore: 120 mm (4.72 in)
+    Stroke: 9B: 160 mm (6.30 in), 9Bf: 172 mm (6.77 in)
+    Displacement: 9B: 16.29 l (994.08 cu in), 9Bf: 17.5 l (1,067.92 cu in)
+    Length: 920 mm (36.22 in)
+    Diameter: 9B: 1,020 mm (40.15 in), 9Bf: 1,030 mm (40.55 in)
+    Dry weight: 173 kg (381 lb)
+
+Performance
+
+    Power output: 9B: 96.94 kW (130 hp) at 1,250 rpm
+    Specific power: 9B: 0.1308 hp/cu in (5.953 kW/l)
+    Compression ratio: 9B: 4.56:1
+    Specific fuel consumption: 9B: 0.564 l/kW/hour(0.74 pt/hp/hour)
+    Oil consumption: 9B: 0.0686 l/kW/hour (0.09 0.11 pt/hp/hour)
+    Power-to-weight ratio: 9B: 0.563 kW/kg (0.341 hp/lb)
+	
+-->
+
+
+<piston_engine name="Clerget 9B">
+    <displacement unit="IN3"> 994.08 </displacement> 
+			<!-- this value is used to determine mass air and fuel flow which impacts engine power and cooling. -->
+    <bore unit="IN"> 4.72  </bore>
+			<!-- cylinder bore is currently unused. -->
+    <stroke unit="IN"> 6.3 </stroke>
+			<!-- piston stroke is used to determine the mean piston speed. 
+			A longer stroke results in an engine that does not work as well at higher speeds -->
+    <cylinders> 9 </cylinders>
+			<!-- number of cylinders scales the cylinder head mass. -->
+	<compression-ratio> 4.56 </compression-ratio>
+			<!-- the compression ratio affects the change in volumetric efficiency with altitude.-->    
+	<maxhp> 130 </maxhp>
+			<!-- this value is the nominal power the engine creates at maxrpm.
+			It will determine bsfc if that tag is not input. It also determines the starter motor power. -->   
+	<cycles> 4 </cycles>
+			<!-- Designate a 2 or 4 stroke engine. Currently only the 4 stroke engine is supported. -->
+    <idlerpm> 170 </idlerpm>
+			<!-- this value affects the throttle fall off and the engine stops running
+			if it is slowed below 80% of this value. The engine starts running when it reaches 80% of this value. -->
+    <maxrpm> 1250 </maxrpm>
+			<!-- this value is used to calculate air-box resistance and BSFC.
+			It also affects oil pressure among other things. -->
+	<starter-torque> 100 </starter-torque>
+
+		<!-- AIR INTAKE -->
+		
+	<ram-air-factor> 1 </ram-air-factor>
+			<!-- this number creates a pressure increase with an increase in dynamic pressure (aircraft speed). 
+				is the efficiency of the air scoop intake. 0 turns ram air off. Default is 1. -->
+	<air-intake-impedance-factor> 0.0 </air-intake-impedance-factor>
+			<!-- this number is the pressure drop across the intake system. Increasing it reduces available manifold pressure.
+				It is determined by <maxmp> if not supplied. -->
+	
+		<!-- THROTTLE -->		
+		
+    <maxmp unit="INHG"> 29.92 </maxmp>
+			<!-- this value is the nominal maximum manifold pressure at sea-level without boost.
+			Along with maxrpm it determines the resistance of the aircraft's intake system. 
+			See air-intake-impedance-factor 
+
+			It is used for determining <BSFC> and <air-intake-impedance-factor> if a values are not supplied
+			for those items. In a supercharged engine is always the pressure at sea level under standard 
+			conditions (29.9). -->
+
+	<minmp unit="INHG"> 11.7 </minmp>
+			<!-- 11.7 this value is the nominal idle manifold pressure at sea-level without boost. 
+			Along with idlerpm, it determines the throttle response slope. -->
+			
+
+		<!-- POWER PRODUCTION -->
+
+	<sparkfaildrop> 0.44444 </sparkfaildrop>
+			<!-- this is the percentage drop in horsepower for single magneto operation, try a value of 0.8 or so. -->	
+    <volumetric-efficiency> 0.506 </volumetric-efficiency>
+			<!-- controls how much mixture goes through the engine at sea level running at the rated RPM.
+			Value of 1 for unboosted engines and values over 1 for boosted engines. -->
+	<bsfc unit="LBS/HP*HR"> 0.43 </bsfc>
+			<!-- 	0.75 = 75hp = 4 cylinders
+					0.657 = 75hp = 5 cylinders
+			Indicated Specific Fuel Consumption.
+			The power produced per unit of fuel. Higher numbers give worse fuel economy.
+			This number may need to be lowered slightly from actual BSFC numbers because some internal engine losses
+			are modeled separately. --> 
+
+		<!-- COOLING -->
+
+    <cylinder-head-mass unit="LBS"> 120 </cylinder-head-mass>
+			<!-- the nominal mass of a cylinder head. A larger value slows changes in engine temperature.
+			So if you have a '5-minute' limit on a power setting you can adjust this
+			value so the engine just starts to overheat at the end of the given time frame.-->
+	<cooling-factor> 0.5 </cooling-factor>
+			<!-- this number models how efficient the aircraft cooling system is. Raising the value makes
+			the engine run cooler. This value is exposed on the property tree so it may be
+			altered at runtime to simulate cowl flaps, for example. -->
+    
+</piston_engine>
+
