@@ -1,0 +1,162 @@
+<?xml version="1.0"?>
+
+<!--
+**************************************************************************
+
+Copyright (c) 2016 Simon 'bomber' Morley
+simonbomber64 at googlemail.com
+
+This work is licensed under the 
+Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License. 
+To view a copy of this license, 
+visit http://creativecommons.org/licenses/by-nc-sa/3.0/ or 
+send a letter to Creative Commons, PO Box 1866, Mountain View, CA 94042, USA.
+
+Attribution,  You must give appropriate credit, provide a link to the license, 
+and indicate if changes were made. You may do so in any reasonable manner, 
+but not in any way that suggests the licensor endorses you or your use.
+
+NonCommercial,  You may not use the material for commercial purposes.
+
+ShareAlike,  If you remix, transform, or build upon the material, 
+you must distribute your contributions under the same license as the original. 
+
+**************************************************************************
+-->
+
+<system name="flight_control">
+
+	<channel name="Elevator">
+
+		<switch name="T4T/execute">
+			<default value="0"/>
+			<test value="1">
+				simulation/sim-time-sec GE 1
+			</test>
+			<output>T4T/execute</output>		
+		</switch>
+<!--
+		<aerosurface_scale name="dynamic trim">
+			<input>aero/qbar-psf</input>
+			<range>
+				<min>0.0</min>
+				<max>1000</max>
+			</range>
+			<clipto>
+				<min>0</min>
+				<max>1</max>
+			</clipto>
+			<output>T4T/aero/dynamic_trim</output>
+		</aerosurface_scale>		
+-->	
+		<aerosurface_scale name="Elevator angle Control">
+			<input>fcs/elevator-cmd-norm</input>
+			<range>
+				<min>-1</min>
+				<max>1</max>
+			</range>
+			<output>fcs/elevator-pos-norm</output>
+		</aerosurface_scale>
+		<aerosurface_scale name="Elevator trim">
+			<input>fcs/pitch-trim-cmd-norm</input>
+			<range>
+				<min>-1.0</min>
+				<max>1.0</max>
+			</range>
+			<clipto>
+				<min>-0.25</min> <!-- down 25% -->
+				<max>0.25</max> <!-- up 25% -->
+			</clipto>
+			<output>fcs/pitch-trim-pos-norm</output>
+		</aerosurface_scale>
+		<summer name="Elevator position">
+			<input>fcs/elevator-pos-norm</input>
+			<input>fcs/pitch-trim-pos-norm</input>
+			<clipto>
+				<min>-1.0</min>
+				<max>1.0</max>
+			</clipto>
+			<output>fcs/elevator-pos-norm</output>
+		</summer>
+		
+	</channel>
+
+	
+        <channel name="Aileron">
+            <aerosurface_scale name="Aileron stick">
+                <input>fcs/aileron-cmd-norm</input>			
+                <range>
+                    <min>-1</min>
+                    <max>1</max>
+                </range>
+                <output>fcs/aileron-pos-norm</output>
+            </aerosurface_scale>
+			<aerosurface_scale name="Aileron trim">
+                <input>fcs/roll-trim-cmd-norm</input>
+                <range>
+                    <min>-1.0</min>
+                    <max>1.0</max>
+                </range>
+                <clipto>
+                    <min>-0.25</min> <!-- down 25% -->
+                    <max>0.25</max> <!-- up 25% -->
+                </clipto>
+                <output>fcs/roll-trim-pos-norm</output>
+			</aerosurface_scale>
+			
+            <summer name="left Aileron position">
+<!--			    <input>ap/roll-cmd-norm-output</input>	-->
+                <input>fcs/aileron-pos-norm</input>
+                <input>fcs/roll-trim-pos-norm</input>
+                <clipto>
+                    <min>-1.0</min>
+                    <max>1.0</max>
+                </clipto>
+                <output>fcs/left-aileron-pos-norm</output>
+            </summer>
+			<summer name="right Aileron position">
+<!--			    <input>-ap/roll-cmd-norm-output</input> -->
+                <input>-fcs/aileron-cmd-norm</input>
+                <input>-fcs/roll-trim-pos-norm</input>
+                <clipto>
+                    <min>-1.0</min>
+                    <max>1.0</max>
+                </clipto>
+                <output>fcs/right-aileron-pos-norm</output>
+            </summer>
+        </channel>
+
+	
+		<channel name="Rudder">
+            <aerosurface_scale name="Rudder stick">
+                <input>fcs/rudder-cmd-norm</input>
+                <range>
+                    <min>-1</min>
+                    <max>1</max>
+                </range>
+                <output>fcs/rudder-pos-norm</output>
+            </aerosurface_scale>
+			<aerosurface_scale name="Rudder trim">
+                <input>fcs/yaw-trim-cmd-norm</input>
+                <range>
+                    <min>-1.0</min>
+                    <max>1.0</max>
+                </range>
+                <clipto>
+                    <min>-0.25</min> <!-- left 25% -->
+                    <max>0.25</max> <!-- right 25% -->
+                </clipto>
+                <output>fcs/yaw-trim-pos-norm</output>
+			</aerosurface_scale>
+            <summer name="Rudder position">
+                <input>fcs/rudder-pos-norm</input>
+                <input>fcs/yaw-trim-pos-norm</input>
+                <clipto>
+                    <min>-1.0</min>
+                    <max>1.0</max>
+                </clipto>
+                <output>fcs/rudder-pos-norm</output>
+            </summer>
+        </channel>
+
+</system>

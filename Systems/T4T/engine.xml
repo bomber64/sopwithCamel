@@ -1,0 +1,220 @@
+<?xml version="1.0"?>
+
+<!--
+**************************************************************************
+
+Copyright (c) 2016 Simon 'bomber' Morley
+simonbomber64 at googlemail.com
+
+This work is licensed under the 
+Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License. 
+To view a copy of this license, 
+visit http://creativecommons.org/licenses/by-nc-sa/3.0/ or 
+send a letter to Creative Commons, PO Box 1866, Mountain View, CA 94042, USA.
+
+Attribution,  You must give appropriate credit, provide a link to the license, 
+and indicate if changes were made. You may do so in any reasonable manner, 
+but not in any way that suggests the licensor endorses you or your use.
+
+NonCommercial,  You may not use the material for commercial purposes.
+
+ShareAlike,  If you remix, transform, or build upon the material, 
+you must distribute your contributions under the same license as the original. 
+
+**************************************************************************
+-->
+
+<system name="propulsion">
+
+
+	<channel name="mixture">
+
+		<fcs_function name="atmosphere/P-inhg">
+			<function>
+				<quotient>
+					 <property> atmosphere/P-psf </property>
+					 <value> 70.718080418265 </value>
+				</quotient>
+			</function>
+		</fcs_function>
+		
+		<fcs_function name="systems/propulsion/mixture">
+			<function> 
+				<table>
+					<independentVar>atmosphere/P-inhg</independentVar>
+					<tableData>
+						11.83	0.446
+						12.32	0.452
+						12.85	0.459
+						13.4	0.479
+						13.98	0.492
+						14.56	0.505
+						15.17	0.525
+						15.77	0.545
+						16.41	0.588
+						17.08	0.578
+						17.77	0.598
+						18.49	0.624
+						19.21	0.644
+						19.96	0.67
+						20.75	0.697
+						21.55	0.72
+						22.38	0.749
+						23.23	0.776
+						24.1	0.81
+						25.02	0.835
+						25.96	0.861
+						26.95	0.888
+						27.95	0.921
+						28.99	0.9538
+						29.92	1
+			</tableData>
+		</table>
+			</function>
+			<output>fcs/mixture-cmd-norm</output>
+		</fcs_function>		
+
+		
+	</channel>
+	
+	<channel name="fuel and oil-usage">
+	
+		<pure_gain name="fuel/oil_usage-pps">
+			<gain>0.17878427</gain>
+			<input>-propulsion/engine[0]/fuel-flow-rate-pps</input>
+			<output>propulsion/tank[2]/external-flow-rate-pps</output>		
+		</pure_gain>
+		
+		<scheduled_gain name="propulsion/engine[0]/cooling-factor">
+				<input>propulsion/engine[0]/cooling-factor</input>
+				<table>
+					<independentVar>propulsion/tank[0]/pct-full</independentVar>
+					<tableData>
+						0.0			0
+						1.0			1
+					</tableData>
+				</table>
+			<output>propulsion/engine[0]/cooling-factor</output> 
+		</scheduled_gain>
+	
+		<!-- Fuel tranfer rate in pps-->
+		<fcs_function name="fuel/pressure-tank_flow_to_gravity-tank-pps">
+			<function>
+				<product>	
+					<table name="fuel/pressure tank_exit-pps">
+						<independentVar>aero/qbar-psf</independentVar>
+						<tableData>
+							0.0		0
+							15		1.2
+						</tableData>
+					</table>
+					<table name="fuel/gravity-tank_float-switch">
+						<independentVar>propulsion/tank[0]/pct-full</independentVar>
+						<tableData>
+							98		1
+							100		0        
+						</tableData>
+					</table>				
+				</product>					
+			</function>
+			<output>propulsion/tank[0]/external-flow-rate-pps</output>	
+		</fcs_function>
+		
+		<pure_gain name="propulsion/tank[1]/external-flow-rate-pps">
+			<gain>-1</gain>
+			<input>propulsion/tank[0]/external-flow-rate-pps</input>
+			<output>propulsion/tank[1]/external-flow-rate-pps</output>		
+		</pure_gain>
+		
+		<!-- negative gravity cut-off -->
+		<fcs_function name="propulsion/engine[0]/volumetric-efficiency">
+			<function>
+				<product>
+					<value> 0.54 </value> <!-- volumetric-efficiency -->
+					<table>
+						<independentVar>accelerations/Nz</independentVar>
+						<tableData>
+							0		0.01
+							0.998	1        
+						</tableData>
+					</table>				
+				</product>					
+			</function>
+			<output>propulsion/engine[0]/volumetric-efficiency</output>	
+		</fcs_function>
+		
+	</channel>
+	
+	<channel name="precession">
+	
+<!--
+
+http://www.mh-aerotools.de/airfoils/prop_precession_english.htm
+
+P = A.B.C
+
+P = Precession moment exerted by propeller on aircraft (Nm)
+A = Moment of inertia of propeller (kgm2)
+B = Rotation speed of propeller (rad/s)
+C = Pitch rate of aircraft (rad/s)
+
+-->
+	
+		<fcs_function name="propulsion/engine[0]/propeller-rad_sec">
+			<function>
+				<quotient>
+					 <property> propulsion/engine[0]/propeller-rpm  </property>
+					 <v> 377 </v>
+				</quotient>
+			</function>
+		</fcs_function>
+
+
+		<fcs_function name="propulsion/engine[0]/precession-lbs">
+			<function>	
+				<product>
+					 <property> propulsion/engine[0]/propeller-rad_sec  </property>
+					 <v> 21 </v> <!-- Moment of inertia of propeller + engine(kgm2)  see propeller xml -->
+					 <property> velocities/q-rad_sec  </property>
+					 <v> 0.224 </v> <!-- converts to lb force   -->							 
+				</product>				
+			</function>
+		</fcs_function>
+
+		
+	</channel>
+
+<!--
+		
+	<channel name="engine[0]">
+	
+		<fcs_function name="propulsion/engine[0]/pepi">
+			<function>
+				<quotient>
+					 <property> atmosphere/P-inhg </property>
+					 <property> propulsion/engine[0]/map-inhg </property>
+				</quotient>
+			</function>
+		</fcs_function>
+
+
+		<fcs_function name="systems/propulsion/starter-norm">
+			<function> 
+				<table>
+					<independentVar>propulsion/engine[0]/engine-rpm</independentVar>
+					<tableData>
+						0 		0.01
+						12		0.01
+						45		0.1
+						100		1.0
+					</tableData>
+				</table>
+			</function>
+			<output>propulsion/engine[0]/starter-norm</output> 
+		</fcs_function>
+
+		
+	</channel>
+-->
+	
+</system>
